@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduChain Myanmar - Digital Certificate System</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#2E8B57">
+    <meta name="description" content="Myanmar's first blockchain-based certificate platform - Issue, verify, and manage digital certificates">
+    
+    <!-- Open Graph Meta Tags for Social Sharing -->
+    <meta property="og:title" content="EduChain Myanmar - Digital Certificate System">
+    <meta property="og:description" content="Issue and verify tamper-proof digital certificates in Myanmar">
+    <meta property="og:type" content="website">
+    
+    <style>
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Pyidaungsu', 'Myanmar3', sans-serif;
+            background: linear-gradient(135deg, #2E8B57, #1a535c);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 100%;
+            background: white;
+        }
+        
+        .app-header {
+            background: #2E8B57;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin: 10px 0;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 85%;
+            animation: fadeIn 0.3s;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            background: #2E8B57;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .bot-message {
+            background: #e8f5e8;
+            color: #2d5016;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .input-container {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            gap: 10px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #2E8B57;
+            border-radius: 25px;
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .send-button {
+            background: #2E8B57;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            background: #f1f8e9;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .quick-btn {
+            background: white;
+            border: 2px solid #2E8B57;
+            color: #2E8B57;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .quick-btn:hover {
+            background: #2E8B57;
+            color: white;
+        }
+        
+        .install-btn {
+            background: #FFD700;
+            border: 2px solid #FFD700;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .correction-btn {
+            background: #FF6B35;
+            border: 2px solid #FF6B35;
+            color: white;
+        }
+        
+        .status-bar {
+            background: #2E8B57;
+            color: white;
+            padding: 5px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        /* Certificate Styles */
+        .certificate-form {
+            background: white;
+            border: 2px solid #2E8B57;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .certificate-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        
+        .certificate-result {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .correction-result {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .qr-code {
+            max-width: 150px;
+            margin: 10px auto;
+            border: 2px solid #2E8B57;
+            border-radius: 10px;
+        }
+        
+        .certificate-item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+        }
+
+        .deployment-info {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="status-bar" id="statusBar">
+            🚀 EduChain Myanmar - Live v1.0 | Ready for Deployment
+        </div>
+        
+        <div class="app-header">
+            <h1>🎓 EduChain Myanmar</h1>
+            <p>Professional Digital Certificate System</p>
+            <div class="deployment-info">
+                <strong>🌐 Live URL: </strong><span id="liveUrl">Loading...</span>
+                <br>
+                <button class="quick-btn" onclick="shareLiveUrl()" style="margin: 5px;">📤 Share This App</button>
+                <button class="quick-btn install-btn" onclick="showInstallPrompt()" style="margin: 5px;">📲 Install App</button>
+            </div>
+        </div>
+        
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="quickAction('လက်မှတ်ထုတ်')">လက်မှတ်ထုတ်</button>
+            <button class="quick-btn" onclick="quickAction('လက်မှတ်စစ်ဆေး')">လက်မှတ်စစ်ဆေး</button>
+            <button class="quick-btn correction-btn" onclick="quickAction('လက်မှတ်ပြင်ဆင်ရန်')">လက်မှတ်ပြင်</button>
+            <button class="quick-btn" onclick="quickAction('စာရင်းကြည့်')">စာရင်းကြည့်</button>
+            <button class="quick-btn" onclick="quickAction('အကူအညီ')">အကူအညီ</button>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                <strong>EduChain AI:</strong> မင်္ဂလာပါ! Live deployment version ကိုစတင်အသုံးပြုပါပြီ။ ဤ app ကို online တွင်ရှိပြီး မည်သူမဆိုသုံးနိုင်ပါသည်။ "Share This App" ခလုတ်နှိပ်ပြီး အခြားသူများကိုမျှဝေနိုင်ပါသည်။
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" class="message-input" id="userInput" 
+                   placeholder="စာရိုက်ထည့်ပါ..." 
+                   onkeypress="if(event.key=='Enter') sendMessage()">
+            <button class="send-button" onclick="sendMessage()">ပို့မည်</button>
+        </div>
+        
+        <!-- Deployment Footer -->
+        <div style="text-align: center; padding: 10px; background: #f8f9fa; border-top: 1px solid #ddd;">
+            <small>🚀 Powered by EduChain Myanmar | Live Version 1.0 | 
+                <span id="visitCount">Loading visits...</span> |
+                <span id="certCount">Loading certificates...</span>
+            </small>
+        </div>
+    </div>
+
+    <script>
+        // ==================== ENHANCED CERTIFICATE SYSTEM ====================
+        class CertificateSystem {
+            constructor() {
+                this.certificates = [];
+                this.currentIssueFlow = null;
+                this.currentCorrectionFlow = null;
+                this.init();
+            }
+            
+            init() {
+                this.loadFromStorage();
+                console.log('✅ Certificate System Initialized');
+            }
+            
+            issueNewCertificate(studentData) {
+                const certificateId = 'EDU' + Date.now().toString().slice(-6);
+                const newCert = {
+                    id: certificateId,
+                    studentName: studentData.studentName,
+                    courseName: studentData.courseName,
+                    institution: studentData.institution,
+                    issueDate: new Date().toLocaleDateString('my-MM'),
+                    issueTimestamp: new Date().toISOString(),
+                    status: 'ACTIVE',
+                    isCorrected: false,
+                    originalCertificateId: null,
+                    qrCode: this.generateQRCode(certificateId)
+                };
+                
+                this.certificates.push(newCert);
+                this.saveToStorage();
+                return newCert;
+            }
+
+            correctCertificate(originalCertId, correctedData) {
+                const originalCert = this.certificates.find(c => c.id === originalCertId);
+                if (originalCert) {
+                    originalCert.status = 'CORRECTED';
+                }
+
+                const correctedCert = {
+                    id: 'EDU' + Date.now().toString().slice(-6),
+                    studentName: correctedData.studentName || originalCert.studentName,
+                    courseName: correctedData.courseName || originalCert.courseName,
+                    institution: correctedData.institution || originalCert.institution,
+                    issueDate: new Date().toLocaleDateString('my-MM'),
+                    issueTimestamp: new Date().toISOString(),
+                    status: 'ACTIVE',
+                    isCorrected: true,
+                    originalCertificateId: originalCertId,
+                    correctionReason: correctedData.correctionReason,
+                    qrCode: this.generateQRCode('EDU' + Date.now().toString().slice(-6))
+                };
+                
+                this.certificates.push(correctedCert);
+                this.saveToStorage();
+                return correctedCert;
+            }
+            
+            verifyCertificate(certificateId) {
+                const cert = this.certificates.find(c => c.id === certificateId);
+                if (cert) {
+                    let correctionInfo = null;
+                    if (cert.isCorrected && cert.originalCertificateId) {
+                        correctionInfo = this.certificates.find(c => c.id === cert.originalCertificateId);
+                    }
+                    return { valid: true, data: cert, correctionInfo: correctionInfo };
+                }
+                return { valid: false };
+            }
+            
+            generateQRCode(certificateId) {
+                return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=EduChain:${certificateId}`;
+            }
+            
+            getAllCertificates() {
+                return this.certificates;
+            }
+
+            getActiveCertificates() {
+                return this.certificates.filter(cert => cert.status === 'ACTIVE');
+            }
+
+            findCertificateByIdOrName(searchTerm) {
+                return this.certificates.filter(cert => 
+                    cert.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    cert.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    cert.courseName.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+            
+            saveToStorage() {
+                localStorage.setItem('educhain_certificates', JSON.stringify(this.certificates));
+            }
+            
+            loadFromStorage() {
+                const saved = localStorage.getItem('educhain_certificates');
+                this.certificates = saved ? JSON.parse(saved) : [];
+                console.log(`📁 Loaded ${this.certificates.length} certificates`);
+            }
+            
+            startIssueFlow() {
+                this.currentIssueFlow = { 
+                    step: 'student_name',
+                    data: {}
+                };
+                return "လက်မှတ်ထုတ်ပေးရန် ကျေးဇူးပြု၍ ကျောင်းသားအမည်ထည့်ပါ:";
+            }
+
+            startCorrectionFlow() {
+                this.currentCorrectionFlow = {
+                    step: 'find_certificate',
+                    data: {}
+                };
+                return "ပြင်ဆင်ချင်တဲ့ လက်မှတ်ရဲ့ ID (သို့) ကျောင်းသားအမည်ထည့်ပါ:";
+            }
+
+            processCorrectionStep(input) {
+                if (!this.currentCorrectionFlow) return null;
+
+                switch (this.currentCorrectionFlow.step) {
+                    case 'find_certificate':
+                        const foundCerts = this.findCertificateByIdOrName(input);
+                        if (foundCerts.length === 0) {
+                            this.currentCorrectionFlow = null;
+                            return "❌ လက်မှတ်မတွေ့ပါ။ ID သို့မဟုတ် အမည်ကိုပြန်စစ်ပါ။";
+                        }
+                        
+                        if (foundCerts.length === 1) {
+                            this.currentCorrectionFlow.certificateToCorrect = foundCerts[0];
+                            this.currentCorrectionFlow.step = 'correction_type';
+                            return this.showCertificateForCorrection(foundCerts[0]);
+                        } else {
+                            this.currentCorrectionFlow.foundCerts = foundCerts;
+                            this.currentCorrectionFlow.step = 'select_certificate';
+                            return this.showCertificateSelection(foundCerts);
+                        }
+
+                    case 'select_certificate':
+                        const selectedCert = this.currentCorrectionFlow.foundCerts[parseInt(input) - 1];
+                        if (selectedCert) {
+                            this.currentCorrectionFlow.certificateToCorrect = selectedCert;
+                            this.currentCorrectionFlow.step = 'correction_type';
+                            return this.showCertificateForCorrection(selectedCert);
+                        } else {
+                            return "❌ မှားယွင်းသောရွေးချယ်မှုဖြစ်ပါသည်။";
+                        }
+
+                    case 'correction_type':
+                        if (input === '1') {
+                            this.currentCorrectionFlow.step = 'new_student_name';
+                            return "ပြင်ဆင်ချင်သော ကျောင်းသားအမည်အသစ်ထည့်ပါ:";
+                        } else if (input === '2') {
+                            this.currentCorrectionFlow.step = 'new_course_name';
+                            return "ပြင်ဆင်ချင်သော သင်တန်းအမည်အသစ်ထည့်ပါ:";
+                        } else if (input === '3') {
+                            this.currentCorrectionFlow.step = 'new_institution';
+                            return "ပြင်ဆင်ချင်သော အဖွဲ့အစည်းအမည်အသစ်ထည့်ပါ:";
+                        } else {
+                            return "❌ 1, 2, 3 ထဲက တစ်ခုရွေးပါ။";
+                        }
+
+                    case 'new_student_name':
+                        this.currentCorrectionFlow.correctedData = {
+                            studentName: input,
+                            correctionReason: 'Student name correction'
+                        };
+                        return this.finalizeCorrection();
+
+                    case 'new_course_name':
+                        this.currentCorrectionFlow.correctedData = {
+                            courseName: input,
+                            correctionReason: 'Course name correction'
+                        };
+                        return this.finalizeCorrection();
+
+                    case 'new_institution':
+                        this.currentCorrectionFlow.correctedData = {
+                            institution: input,
+                            correctionReason: 'Institution name correction'
+                        };
+                        return this.finalizeCorrection();
+
+                    default:
+                        this.currentCorrectionFlow = null;
+                        return "ပြဿနာတစ်ခုရှိပါတယ်။ ကျေးဇူးပြု၍ ပြန်စပါ။";
+                }
+            }
+
+            showCertificateForCorrection(certificate) {
+                return `
+                    <div class="certificate-item">
+                        <h4>📋 လက်မှတ်အချက်အလက်</h4>
+                        <p><strong>ID:</strong> ${certificate.id}</p>
+                        <p><strong>ကျောင်းသား:</strong> ${certificate.studentName}</p>
+                        <p><strong>သင်တန်း:</strong> ${certificate.courseName}</p>
+                        <p><strong>အဖွဲ့အစည်း:</strong> ${certificate.institution}</p>
+                        <br>
+                        <p><strong>ဘာကိုပြင်ချင်လဲ?</strong></p>
+                        <p>1. ကျောင်းသားအမည်</p>
+                        <p>2. သင်တန်းအမည်</p>
+                        <p>3. အဖွဲ့အစည်းအမည်</p>
+                        <p>နံပါတ်တစ်ခုရွေးပါ (1, 2, 3):</p>
+                    </div>
+                `;
+            }
+
+            showCertificateSelection(certificates) {
+                let selectionHTML = `<div class="certificate-form"><h4>🔍 တွေ့ရှိချက်များ (${certificates.length})</h4>`;
+                certificates.forEach((cert, index) => {
+                    selectionHTML += `
+                        <div class="certificate-item">
+                            <p><strong>${index + 1}. ${cert.id}</strong> - ${cert.studentName}</p>
+                            <p>${cert.courseName} - ${cert.institution}</p>
+                        </div>
+                    `;
+                });
+                selectionHTML += `<p>ပြင်ဆင်ချင်တဲ့ လက်မှတ်ရဲ့နံပါတ်ထည့်ပါ (1-${certificates.length}):</p></div>`;
+                return selectionHTML;
+            }
+
+            finalizeCorrection() {
+                const originalCert = this.currentCorrectionFlow.certificateToCorrect;
+                const correctedData = this.currentCorrectionFlow.correctedData;
+                
+                const correctedCert = this.correctCertificate(originalCert.id, correctedData);
+                this.currentCorrectionFlow = null;
+
+                return `
+                    <div class="correction-result">
+                        <h3>✅ လက်မှတ်ပြင်ဆင်ပြီးပါပြီ!</h3>
+                        <p><strong>မူရင်းလက်မှတ်:</strong> ${originalCert.id}</p>
+                        <p><strong>ပြင်ဆင်ပြီးလက်မှတ်:</strong> ${correctedCert.id}</p>
+                        <p><strong>ပြင်ဆင်ခြင်းအကြောင်း:</strong> ${correctedData.correctionReason}</p>
+                        <br>
+                        <p><strong>အသစ်ပြင်ဆင်ထားသောအချက်အလက်:</strong></p>
+                        <p>ကျောင်းသားအမည်: ${correctedCert.studentName}</p>
+                        <p>သင်တန်းအမည်: ${correctedCert.courseName}</p>
+                        <p>အဖွဲ့အစည်းအမည်: ${correctedCert.institution}</p>
+                        <img src="${correctedCert.qrCode}" alt="QR Code" class="qr-code">
+                        <p><small>ဤလက်မှတ်အသစ်ကိုသာ အသုံးပြုပါ</small></p>
+                    </div>
+                `;
+            }
+            
+            processIssueStep(input) {
+                if (!this.currentIssueFlow) return null;
+                
+                switch (this.currentIssueFlow.step) {
+                    case 'student_name':
+                        this.currentIssueFlow.data.studentName = input;
+                        this.currentIssueFlow.step = 'course_name';
+                        return "သင်တန်းအမည်ထည့်ပါ:";
+                    
+                    case 'course_name':
+                        this.currentIssueFlow.data.courseName = input;
+                        this.currentIssueFlow.step = 'institution';
+                        return "အဖွဲ့အစည်းအမည်ထည့်ပါ:";
+                    
+                    case 'institution':
+                        this.currentIssueFlow.data.institution = input;
+                        const certificate = this.issueNewCertificate(this.currentIssueFlow.data);
+                        this.currentIssueFlow = null;
+                        return this.formatCertificateResult(certificate);
+                    
+                    default:
+                        this.currentIssueFlow = null;
+                        return "ပြဿနာတစ်ခုရှိပါတယ်။ ကျေးဇူးပြု၍ ပြန်စပါ။";
+                }
+            }
+            
+            formatCertificateResult(certificate) {
+                return `
+                    <div class="certificate-result">
+                        <h3>✅ လက်မှတ်ထုတ်ပြီးပါပြီ!</h3>
+                        <p><strong>Certificate ID:</strong> ${certificate.id}</p>
+                        <p><strong>ကျောင်းသားအမည်:</strong> ${certificate.studentName}</p>
+                        <p><strong>သင်တန်းအမည်:</strong> ${certificate.courseName}</p>
+                        <p><strong>အဖွဲ့အစည်း:</strong> ${certificate.institution}</p>
+                        <p><strong>ထုတ်ပေးသည့်ရက်စွဲ:</strong> ${certificate.issueDate}</p>
+                        <img src="${certificate.qrCode}" alt="QR Code" class="qr-code">
+                        <p><small>QR code ကို scan ဖတ်ပြီး စစ်ဆေးနိုင်ပါတယ်</small></p>
+                        <button class="quick-btn" onclick="shareCertificate('${certificate.id}')" style="margin: 5px;">📤 Share</button>
+                    </div>
+                `;
+            }
+        }
+
+        // ==================== ENHANCED MYANMAR AI ====================
+        class EnhancedMyanmarAI {
+            constructor(certificateSystem) {
+                this.certificateSystem = certificateSystem;
+            }
+            
+            processMessage(message) {
+                if (this.certificateSystem.currentIssueFlow) {
+                    return this.certificateSystem.processIssueStep(message);
+                }
+
+                if (this.certificateSystem.currentCorrectionFlow) {
+                    return this.certificateSystem.processCorrectionStep(message);
+                }
+                
+                if (this.isCertificateIssueCommand(message)) {
+                    return this.certificateSystem.startIssueFlow();
+                }
+
+                if (this.isCorrectionCommand(message)) {
+                    return this.certificateSystem.startCorrectionFlow();
+                }
+                
+                if (this.isVerificationCommand(message)) {
+                    return this.handleVerificationRequest(message);
+                }
+                
+                if (this.isListCertificatesCommand(message)) {
+                    return this.handleListCertificates();
+                }
+                
+                return this.generateGeneralResponse(message);
+            }
+            
+            isCertificateIssueCommand(message) {
+                const keywords = ['လက်မှတ်ထုတ်', 'certificate', 'issue', 'ထုတ်'];
+                return keywords.some(keyword => message.toLowerCase().includes(keyword.toLowerCase()));
+            }
+
+            isCorrectionCommand(message) {
+                const keywords = ['လက်မှတ်ပြင်', 'correct', 'ပြင်ဆင်', 'အမှားပြန်', 'correction'];
+                return keywords.some(keyword => message.toLowerCase().includes(keyword.toLowerCase()));
+            }
+            
+            isVerificationCommand(message) {
+                const keywords = ['စစ်ဆေး', 'verify', 'check', 'အတည်ပြု'];
+                return keywords.some(keyword => message.toLowerCase().includes(keyword.toLowerCase()));
+            }
+            
+            isListCertificatesCommand(message) {
+                const keywords = ['စာရင်း', 'list', 'ကြည့်', 'မှတ်တမ်း'];
+                return keywords.some(keyword => message.toLowerCase().includes(keyword.toLowerCase()));
+            }
+            
+            handleVerificationRequest(message) {
+                const idMatch = message.match(/(EDU\d+)/i);
+                if (idMatch) {
+                    const certificateId = idMatch[1].toUpperCase();
+                    const result = this.certificateSystem.verifyCertificate(certificateId);
+                    
+                    if (result.valid) {
+                        let verificationHTML = `
+                            <div class="certificate-result">
+                                <h3>✅ လက်မှတ်အမှန်ဖြစ်ပါသည်!</h3>
+                                <p><strong>ID:</strong> ${result.data.id}</p>
+                                <p><strong>အမည်:</strong> ${result.data.studentName}</p>
+                                <p><strong>သင်တန်း:</strong> ${result.data.courseName}</p>
+                                <p><strong>အဖွဲ့အစည်း:</strong> ${result.data.institution}</p>
+                                <p><strong>ရက်စွဲ:</strong> ${result.data.issueDate}</p>
+                        `;
+
+                        if (result.data.isCorrected) {
+                            verificationHTML += `
+                                <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                                    <p>⚠️ <strong>ဤလက်မှတ်သည် ပြင်ဆင်ထားသောဗားရှင်းဖြစ်သည်</strong></p>
+                                    <p>မူရင်းလက်မှတ်: ${result.data.originalCertificateId}</p>
+                                </div>
+                            `;
+                        }
+
+                        verificationHTML += `</div>`;
+                        return verificationHTML;
+                    } else {
+                        return "❌ လက်မှတ်မတွေ့ပါ။ Certificate ID ကိုပြန်စစ်ကြည့်ပါ။";
+                    }
+                } else {
+                    return "လက်မှတ်စစ်ဆေးရန် Certificate ID ထည့်ပေးပါ (ဥပမာ: EDU123456)";
+                }
+            }
+            
+            handleListCertificates() {
+                const certificates = this.certificateSystem.getActiveCertificates();
+                if (certificates.length === 0) {
+                    return "📭 လက်မှတ်မရှိသေးပါ။ ပထမဆုံးလက်မှတ်ထုတ်ရန်လိုအပ်ပါသည်။";
+                }
+                
+                let list = `<div class="certificate-result"><h3>📋 လက်မှတ်များ (${certificates.length})</h3>`;
+                certificates.slice().reverse().forEach(cert => {
+                    const statusBadge = cert.isCorrected ? ' <span style="background: orange; color: white; padding: 2px 5px; border-radius: 3px; font-size: 12px;">ပြင်ဆင်ပြီး</span>' : '';
+                    list += `
+                        <div class="certificate-item">
+                            <p><strong>${cert.id}</strong>${statusBadge} - ${cert.studentName}</p>
+                            <p>${cert.courseName} - ${cert.institution}</p>
+                            <small>${cert.issueDate}</small>
+                        </div>
+                    `;
+                });
+                list += `</div>`;
+                return list;
+            }
+            
+            generateGeneralResponse(message) {
+                const responses = {
+                    'အကူအညီ': `💡 **အကူအညီ**\n\nကျွန်တော်ကူညီနိုင်တာတွေ:\n\n✅ **လက်မှတ်ထုတ်ခြင်း** - "လက်မှတ်ထုတ်" ဟုရိုက်ပါ\n✅ **လက်မှတ်ပြင်ဆင်ခြင်း** - "လက်မှတ်ပြင်" ဟုရိုက်ပါ\n✅ **လက်မှတ်စစ်ဆေးခြင်း** - "စစ်ဆေး EDU123" ဟုရိုက်ပါ\n✅ **လက်မှတ်စာရင်း** - "စာရင်းကြည့်" ဟုရိုက်ပါ\n\nဘာကူညီရမလဲ?`,
+                    
+                    'default': `❓ **နားမလည်ပါ**\n\nကျေးဇူးပြု၍ ဒီလိုမေးကြည့်ပါ:\n\n• "လက်မှတ်ထုတ်ပေးပါ"\n• "လက်မှတ်ပြင်ဆင်ပါ"\n• "စစ်ဆေးပါ EDU123"\n• "စာရင်းကြည့်ပါ"\n• "အကူအညီလိုချင်ပါတယ်"`
+                };
+                
+                const lowerMessage = message.toLowerCase();
+                for (const [keyword, response] of Object.entries(responses)) {
+                    if (lowerMessage.includes(keyword.toLowerCase())) {
+                        return response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                    }
+                }
+                return responses.default.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            }
+        }
+
+        // ==================== DEPLOYMENT FEATURES ====================
+        
+        // Visit counter
+        function initVisitCounter() {
+            let visits = localStorage.getItem('educhain_visits') || 0;
+            visits = parseInt(visits) + 1;
+            localStorage.setItem('educhain_visits', visits);
+            document.getElementById('visitCount').textContent = `Visits: ${visits}`;
+        }
+        
+        // Certificate counter
+        function updateCertificateCount() {
+            const count = certificateSystem.getAllCertificates().length;
+            document.getElementById('certCount').textContent = `Certificates: ${count}`;
+        }
+        
+        // Live URL display
+        function initLiveUrl() {
+            const currentUrl = window.location.href;
+            document.getElementById('liveUrl').textContent = currentUrl;
+        }
+        
+        // Share functionality
+        function shareLiveUrl() {
+            const currentUrl = window.location.href;
+            const shareText = `Check out EduChain Myanmar - Digital Certificate System: ${currentUrl}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'EduChain Myanmar',
+                    text: 'Digital Certificate System for Myanmar',
+                    url: currentUrl
+                });
+            } else {
+                navigator.clipboard.writeText(currentUrl);
+                alert('✅ Live URL copied to clipboard! Share it with others.');
+            }
+        }
+        
+        function shareCertificate(certificateId) {
+            const cert = certificateSystem.verifyCertificate(certificateId);
+            if (cert.valid) {
+                const shareText = `EduChain Certificate: ${cert.data.studentName} completed ${cert.data.courseName}. Verify at: ${window.location.href}`;
+                navigator.clipboard.writeText(shareText);
+                alert('✅ Certificate details copied to clipboard!');
+            }
+        }
+
+        // ==================== APP INITIALIZATION ====================
+        let certificateSystem;
+        let myanmarAI;
+        let deferredPrompt;
+
+        function initApp() {
+            certificateSystem = new CertificateSystem();
+            myanmarAI = new EnhancedMyanmarAI(certificateSystem);
+            setupPWA();
+            
+            // Deployment features
+            initVisitCounter();
+            initLiveUrl();
+            updateCertificateCount();
+            
+            updateStatus(`🚀 Live Deployment Ready | ${certificateSystem.certificates.length} certificates loaded`);
+            console.log('🎓 EduChain Live Deployment Initialized!');
+        }
+
+        function setupPWA() {
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    self.addEventListener('install', (event) => {
+                        console.log('🔄 EduChain PWA Installing...');
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('activate', (event) => {
+                        console.log('✅ EduChain PWA Activated');
+                    });
+                `;
+                
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl)
+                    .then(registration => console.log('✅ Production Service Worker Registered'))
+                    .catch(error => console.log('❌ Service Worker Failed:', error));
+            }
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                updateStatus('📱 App Install Available - Click Install Button');
+            });
+        }
+
+        // ==================== UI FUNCTIONS ====================
+        function updateStatus(message) {
+            document.getElementById('statusBar').textContent = message;
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addMessage('user', message);
+            input.value = '';
+            
+            const typing = addMessage('bot', '🤔 AI စဉ်းစားနေပါတယ်...', true);
+            
+            setTimeout(() => {
+                typing.remove();
+                const response = myanmarAI.processMessage(message);
+                addMessage('bot', response);
+                updateCertificateCount();
+            }, 1000);
+        }
+        
+        function quickAction(action) {
+            document.getElementById('userInput').value = action;
+            sendMessage();
+        }
+        
+        function addMessage(sender, text, isTemp = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.innerHTML = `<strong>${sender === 'user' ? 'You' : 'EduChain AI'}:</strong> ${text}`;
+            
+            if (isTemp) {
+                messageDiv.style.opacity = '0.7';
+                messageDiv.style.fontStyle = 'italic';
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return isTemp ? messageDiv : null;
+        }
+
+        function showInstallPrompt() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+            } else {
+                addMessage('bot', "📱 App install လုပ်ရန် Browser menu မှ 'Add to Home screen' ကိုရွေးပါ");
+            }
+        }
+
+        // ==================== START APP ====================
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
